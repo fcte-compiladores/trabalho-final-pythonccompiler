@@ -1,79 +1,99 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/Hppw7Zh2)
-# Trabalho Final
+# Projeto PythoCcompiler
 
-## Escopo e organização
+## Integrantes
 
-O trabalho é de tema livre dentro do escopo da disciplina de compiladores e
-consiste no desenvolvimento de alguma aplicação na área da disciplina (um
-interpretador para uma linguagem simples, compilador, analisadores de código,
-etc.)
+Caio Lucas Lelis Borges
+Matrícula: 211062900
+turma: 18h
 
-O trabalho pode ser feito em grupos de até 4 pessoas.
+Amanda Alves Campos
+Matrícula: 190083590
 
-## Estrutura
+Erick Santos
+Matrícula: 211061672
 
-Os trabalhos devem ser entregues na atividade própria no [github-classrrom](...).
-Cada repositório deve ter uma estrutura parecida com a delineada abaixo:
+## Visão Geral
 
-* **README:** o arquivo README.md na base do repositório deve descrever os
-  detalhes da implementação do código. O README deve ter algumas seções 
-  obrigatórias:
-  - **Título**: nome do projeto
-  - **Integrantes**: lista com os nomes, matrículas e turma de cada integrante.
-  - **Introdução**: deve detalhar o que o projeto implementou, quais foram as
-    estratégias e algoritmos relevantes. Se o projeto implementa uma linguagem
-    não-comum ou um subconjunto de uma linguagem comum, deve conter alguns
-    exemplos de comandos nesta linguagem, descrendo a sua sintaxe e semântica,
-    quando necessário.
-  - **Instalação**: deve detalhar os passos para instalar as dependências e
-    rodar o código do projeto. Pode ser algo simples como *"Rode
-    `uv run lox hello.lox` para executar o interpretador."*, se a linguagem de
-    implementação permitir este tipo de facilidade.
+O `PythoCcompiler` é um projeto que implementa um compilador e uma máquina virtual para uma linguagem de script customizada, semelhante a C, utilizando Python puro. O projeto é dividido em duas partes principais:
 
-    Você pode usar gerenciadores de pacotes específicos de linguagens populares
-    como uv, npm, cargo, etc, containers Docker/Podman, ou `.nix`.
-  - **Exemplos**: o projeto deve conter uma pasta "exemplos" com alguns arquivos
-    na linguagem de programação implementada. Deve conter exemplos com graus
-    variáveis de complexidade. Algo como: hello world, fibonacci, função
-    recursiva, alguma estrutura de dados e para finalizar um algoritmo um pouco
-    mais elaborado como ordenamento de listas, busca binária, etc.
-    
-    Note que isto é apenas um guia da ordem de dificuldade dos problemas.
-    Algumas linguagens sequer permitem a implementação de alguns dos exemplos
-    acima.
-  - **Referências**: descreva as referências que você utilizou para a
-    implementação da linguagem. Faça uma breve descrição do papel de cada
-    referência ou como ela foi usada no projeto. Caso você tenha usado algum 
-    código existente como referência, descreva as suas contribuições originais
-    para o projeto.
-  - **Estrutura do código**: faça uma descrição da estrutura geral do código
-    discutindo os módulos, classes, estruturas de dados ou funções principais. 
-    Explicite onde as etapas tradicionais de compilação (análise léxica, 
-    sintática, semântica, etc) são realizadas, quando relevante.
-  - **Bugs/Limitações/problemas conhecidos**: discuta as limitações do seu
-    projeto e problemas conhecidos e coisas que poderiam ser feitas para
-    melhorá-lo no futuro. Note: considere apenas melhorias incrementais e não
-    melhorias grandes como: "reimplementar tudo em Rust".
-* **Código:** O codigo fonte deve estar presente no repositório principal junto com
-  a declaração das suas dependências. Cada linguagem possui um mecanismo
-  específico para isso, mas seria algo como o arquivo pyproject.toml em Python
-  ou package.json no caso de Javascript.
+1.  **Compilador (`main.py`):** Responsável por analisar o código-fonte da linguagem customizada e traduzi-lo para um bytecode intermediário.
+2.  **Máquina Virtual (`pyc_vm.py`):** Responsável por executar o bytecode gerado pelo compilador.
 
-## Critérios
+## Análise Léxica e Sintática (Parser)
 
-Cada trabalho começa com 100% e pode receber penalizações ou bônus de acordo com
-os critérios abaixo:
+A análise léxica e sintática é realizada no arquivo `main.py`, principalmente pelas classes `token_parser` e `l_parser`.
 
-- Ausência do README: -50%
-- Instruções de instalação não funcionam: até -20%
-- Referências não atribuídas ou falta de referâncias: -10%
-- Código confuso ou mal organizado: até -15%
-- Falta de clareza em apresentar as técnicas e etapas de compilação: -15%
-- Bugs e limitações sérias na implementação: até -25%
-- Escopo reduzido, ou implementação insuficiente: até 25%
-- Uso de código não atribuído/plágio: até -100%
-- Repositório bem estruturado e organizado: até 10%
-- Linguagem com conceitos originais/interessantes: até +15%
-- Testes unitários: até +15%, dependendo da cobertura
+### Análise Léxica (`token_parser`)
 
-Após aplicar todos os bônus, a nota é truncada no intervalo 0-100%. 
+A classe `token_parser` é o analisador léxico (ou _scanner_). Sua função é ler o código-fonte como uma string e dividi-lo em uma sequência de _tokens_.
+
+- **Tokens:** Os tokens representam as unidades fundamentais da linguagem, como números, strings, identificadores e palavras-chave. Os tipos de tokens são definidos na classe `token` (ex: `TK_NUM_INT`, `TK_ID`, `TK_IF`).
+- **Processo:** O método `next()` da classe `token_parser` avança pelo código-fonte caractere por caractere, agrupando-os para formar tokens. Ele consegue identificar:
+  - Números (inteiros e de ponto flutuante).
+  - Strings (delimitadas por aspas duplas).
+  - Identificadores (nomes de variáveis e funções).
+  - Palavras-chave reservadas (`if`, `else`, `for`, etc.).
+  - Operadores (`+`, `-`, `*`, `/`, `==`, etc.).
+  - Símbolos diversos (`(`, `)`, `{`, `}`, `;`, `,`).
+
+### Análise Sintática (`l_parser`)
+
+A classe `l_parser` é o analisador sintático (ou _parser_). Ela recebe a sequência de tokens do `token_parser` e constrói uma estrutura de dados hierárquica, geralmente uma Árvore de Sintaxe Abstrata (AST), que representa a estrutura gramatical do código.
+
+- **Gramática:** O parser implementa uma gramática _top-down_ com recursão descendente para analisar a estrutura do código. Os métodos da classe (`expr`, `statement`, `ifstat`, etc.) correspondem às regras da gramática da linguagem.
+- **Precedência de Operadores:** A lógica no método `expr` lida com a precedência e associatividade dos operadores aritméticos e lógicos, garantindo que expressões como `1 + a * 5` sejam avaliadas corretamente.
+- **Estruturas de Controle:** O parser reconhece e estrutura construções como:
+  - **Expressões:** Atribuições, chamadas de função, operações aritméticas.
+  - **Declarações:** `if-else`, `while`, `for`.
+  - **Definições de Funções:** `nome_funcao(arg1, arg2) { ... }`.
+  - **Variáveis Globais:** `global var1;`.
+- **Saída:** O resultado do parser é uma lista de nós (`parser_list`) que representa o programa de forma estruturada, pronta para a próxima fase.
+
+## Análise Semântica e Geração de Código (`l_compiler`)
+
+A classe `l_compiler` realiza a análise semântica e a geração do código intermediário (bytecode).
+
+### Análise Semântica
+
+- **Gerenciamento de Variáveis:** O compilador diferencia variáveis locais e globais. Ele mantém um registro das variáveis declaradas (`local_vars`, `global_vars`) para garantir que elas sejam usadas corretamente.
+- **Resolução de Nomes:** Durante a compilação, o `l_compiler` resolve os nomes de variáveis e funções, associando-os a endereços ou índices.
+- **Verificação de Tipos (Limitada):** A verificação de tipos é dinâmica e ocorre principalmente em tempo de execução na VM. O compilador não realiza uma verificação de tipos estática rigorosa.
+
+### Geração de Código
+
+- **Bytecode:** O compilador traduz a AST gerada pelo parser em uma lista de operações de máquina virtual (`op_list`). Cada operação é uma instância da classe `vm_op`.
+- **Operações da VM (`vm_op`):** As operações incluem:
+  - Aritméticas: `OP_ADD`, `OP_SUB`, `OP_MUL`, `OP_DIV`.
+  - Lógicas: `OP_EQ`, `OP_GT`, `OP_AND`, `OP_OR`.
+  - Controle de Fluxo: `OP_JZ` (salto se zero), `OP_JMP` (salto incondicional).
+  - Acesso à Memória: `OP_PUSH` (empilhar na pilha), `OP_ASSIGN` (atribuir valor).
+  - Chamada de Função: `OP_FUN`, `OP_RET`.
+- **Registradores Virtuais:** O compilador utiliza um sistema de registradores virtuais (`freereg`) para armazenar resultados intermediários de expressões, otimizando a execução.
+
+## Máquina Virtual (`pyc_vm.py`)
+
+A classe `py2c_vm` é a máquina virtual que executa o bytecode.
+
+- **Arquitetura baseada em Pilha:** A VM utiliza uma arquitetura baseada em pilha (`stacks`) para gerenciar dados, argumentos de função e variáveis locais.
+- **Ciclo de Execução:** O método `run()` da VM entra em um loop infinito, onde a cada iteração:
+  1.  Busca a próxima instrução de bytecode no endereço apontado pelo contador de programa (`pc`).
+  2.  Decodifica a instrução.
+  3.  Executa a operação correspondente (ex: realiza uma soma, desvia o fluxo de execução, etc.).
+  4.  Incrementa o `pc` para a próxima instrução.
+- **Gerenciamento de Chamadas de Função:** A VM gerencia o fluxo de chamadas de função usando uma pilha de chamadas (`call_infos`), salvando o estado (como o `pc` de retorno) antes de pular para o código da função.
+- **Funções Importadas:** A VM pode interagir com o ambiente Python através de funções importadas (como `printf`, `list`, `len`), permitindo que a linguagem de script execute operações de I/O e manipule estruturas de dados do Python.
+## Como Rodar o Projeto
+
+O projeto não requer dependências externas além do Python. Para executá-lo, siga os passos abaixo:
+
+1. **Clone o repositório (ou tenha os arquivos `main.py` e `pyc_vm.py` no mesmo diretório).**
+
+2. **Execute o arquivo principal:**
+
+   O código de exemplo já está incluído no final do arquivo `main.py`. Para executá-lo, basta rodar o script diretamente no seu terminal:
+
+   ```bash
+   python main.py
+   ```
+3. ***Saída esperada***
+        4 3 11
